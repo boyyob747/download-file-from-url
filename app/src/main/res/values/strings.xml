@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">DonwloadImage</string>
+    <string name="required_permission_write_external_storage">Required Permission Write External Storage</string>
+</resources>
