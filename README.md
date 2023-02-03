@@ -31,6 +31,39 @@ fun openImage(context: Context, filePath: String) {
 }
 
 ```
+- Java 
+```java
+public void downloadAndOpenImage(Context context, String url, String fileName) {
+    DownloadManager.Request request = new DownloadManager.Request(Uri.parse(url));
+    request.setDestinationInExternalPublicDir(Environment.DIRECTORY_PICTURES, fileName);
+    request.allowScanningByMediaScanner();
+    request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
+    DownloadManager manager = (DownloadManager) context.getSystemService(Context.DOWNLOAD_SERVICE);
+    final long downloadId = manager.enqueue(request);
+
+    BroadcastReceiver onDownloadComplete = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            long id = intent.getLongExtra(DownloadManager.EXTRA_DOWNLOAD_ID, -1);
+            if (downloadId == id) {
+                openImage(context, Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES) + "/" + fileName);
+                context.unregisterReceiver(this);
+            }
+        }
+    };
+
+    context.registerReceiver(onDownloadComplete, new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE));
+}
+
+public void openImage(Context context, String filePath) {
+    Intent intent = new Intent(Intent.ACTION_VIEW);
+    Uri uri = FileProvider.getUriForFile(context, context.getPackageName() + ".provider", new File(filePath));
+    intent.setDataAndType(uri, "image/*");
+    intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+    context.startActivity(intent);
+}
+
+```
 - File Provider
 ```
 // AndroidManifest.xml
